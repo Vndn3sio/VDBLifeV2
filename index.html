@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanden Borre Life — Verkoopstool</title>
+<style>
+  :root {
+    --red: #E4032E;
+    --black: #1A1A1A;
+    --bg: #F4F4F6;
+    --border: rgba(0,0,0,0.1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--black);
+  }
+  header {
+    background: var(--red);
+    color: #fff;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  header p { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,0.85); }
+  #reset-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.15);
+    border: none; color: #fff; padding: 10px 16px;
+    border-radius: 999px; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  #reset-btn:hover { background: rgba(255,255,255,0.25); }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 1024px) {
+    .wrap { grid-template-columns: 1fr 380px; align-items: start; }
+    .right-col { position: sticky; top: 96px; }
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
+  }
+  .card h2 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  .card .sub { margin: 0 0 16px; font-size: 13px; color: rgba(0,0,0,0.5); }
+
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  @media (min-width: 480px) { .catalog-grid { grid-template-columns: repeat(4, 1fr); } }
+  .catalog-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    font-family: inherit;
+  }
+  .catalog-btn:hover { border-color: var(--red); background: #fff5f6; }
+  .catalog-btn:active { transform: scale(0.96); }
+  .catalog-btn .icon { font-size: 24px; }
+  .catalog-btn .label { font-size: 12px; font-weight: 500; text-align: center; line-height: 1.2; }
+
+  #device-list { display: flex; flex-direction: column; gap: 8px; }
+  .device-row {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .device-row .icon { font-size: 18px; color: var(--red); width: 22px; text-align: center; }
+  .device-row .name { font-weight: 500; font-size: 14px; width: 128px; flex-shrink: 0; }
+  .price-field { display: flex; align-items: center; gap: 4px; }
+  .price-field span { color: rgba(0,0,0,0.4); font-size: 14px; }
+  .price-field input {
+    width: 90px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px;
+    padding: 6px 8px; font-size: 14px; font-family: inherit;
+  }
+  .price-field input:focus { outline: 2px solid rgba(228,3,46,0.4); }
+
+  .source-toggle { display: flex; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px; overflow: hidden; font-size: 12px; font-weight: 500; }
+  .source-toggle button { border: none; padding: 7px 10px; cursor: pointer; background: #fff; color: rgba(0,0,0,0.5); font-family: inherit; }
+  .source-toggle button.active-vdb { background: var(--red); color: #fff; }
+  .source-toggle button.active-other { background: var(--black); color: #fff; }
+
+  .remove-btn {
+    margin-left: auto; background: none; border: none; cursor: pointer;
+    color: rgba(0,0,0,0.3); padding: 4px; font-size: 18px; line-height: 1;
+  }
+  .remove-btn:hover { color: var(--red); }
+
+  .empty-state { text-align: center; padding: 40px 0; color: rgba(0,0,0,0.4); font-size: 14px; }
+
+  .price-tag { background: #fff; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; }
+  .price-tag .head { background: var(--black); color: #fff; padding: 16px 20px; }
+  .price-tag .head .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .price-tag .head .amount { margin: 2px 0 0; font-size: 18px; font-weight: 700; }
+  .price-tag .head .tv-note { margin: 2px 0 0; font-size: 12px; color: rgba(255,255,255,0.6); }
+  .price-tag .body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .row-between { display: flex; justify-content: space-between; font-size: 14px; }
+  .row-between .label { color: rgba(0,0,0,0.5); }
+  .row-between .value { font-weight: 600; }
+  .divider { border-top: 1px dashed var(--border); padding-top: 16px; }
+  .eyebrow-sm { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(0,0,0,0.4); margin: 0 0 4px; }
+  .big-amount { display: flex; align-items: flex-end; justify-content: space-between; }
+  .big-amount .num { font-size: 30px; font-weight: 800; color: var(--red); }
+  .big-amount .unit { font-size: 14px; color: rgba(0,0,0,0.4); margin-bottom: 4px; }
+  .fine-print { font-size: 12px; color: rgba(0,0,0,0.4); margin: 4px 0 0; }
+
+  .promo-box { background: var(--bg); border-radius: 10px; padding: 12px; margin-top: 4px; }
+  .promo-input-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .promo-input-row input {
+    width: 70px; border: 1px solid rgba(0,0,0,0.15); border-radius: 8px;
+    padding: 6px 8px; font-size: 14px; font-family: inherit; text-align: center;
+  }
+  .promo-input-row input:focus { outline: 2px solid rgba(228,3,46,0.4); }
+  #promo-rate { color: var(--red); }
+  #promo-annual-value { color: var(--red); }
+
+  h3.section-title { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+
+  .repair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0 16px; }
+  .repair-box { border: 1px solid rgba(0,0,0,0.15); background: #fff; border-radius: 12px; padding: 10px 12px; transition: background 0.15s, border-color 0.15s; }
+  .repair-box.active { background: var(--red); border-color: var(--red); }
+  .repair-box .r-label { font-size: 14px; font-weight: 600; margin: 0; color: var(--black); }
+  .repair-box.active .r-label { color: #fff; }
+  .repair-box .r-price { font-size: 12px; margin: 0 0 8px; color: rgba(0,0,0,0.4); }
+  .repair-box.active .r-price { color: rgba(255,255,255,0.8); }
+  .r-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .r-controls button {
+    width: 28px; height: 28px; border-radius: 999px; border: none; cursor: pointer;
+    font-weight: 700; font-size: 14px; background: rgba(0,0,0,0.05); color: var(--black);
+  }
+  .repair-box.active .r-controls button { background: rgba(255,255,255,0.2); color: #fff; }
+  .r-controls button:disabled { opacity: 0.3; cursor: default; }
+  .r-count { font-weight: 700; font-size: 16px; min-width: 20px; text-align: center; color: var(--black); }
+  .repair-box.active .r-count { color: #fff; }
+
+  .result-box { background: var(--bg); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .result-box .breakdown { display: block; font-size: 12px; color: rgba(0,0,0,0.35); margin-top: 2px; }
+  .hr { height: 1px; background: rgba(0,0,0,0.1); }
+  .benefit-row { display: flex; align-items: center; justify-content: space-between; }
+  .benefit-row .label { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .benefit-row .value { font-weight: 700; font-size: 18px; }
+  .value.positive { color: #059669; }
+  .value.neutral { color: rgba(0,0,0,0.7); }
+  .result-note { font-size: 12px; color: rgba(0,0,0,0.45); line-height: 1.5; margin: 0; }
+
+  .info-note { display: flex; gap: 8px; font-size: 12px; color: rgba(0,0,0,0.4); padding: 0 4px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Vanden Borre Life</h1>
+    <p>Verkoopstool — te gebruiken in de winkel</p>
+  </div>
+  <button id="reset-btn" onclick="resetAll()">↺ Nieuwe klant</button>
+</header>
+
+<div class="wrap">
+  <div class="left-col" style="display:flex; flex-direction:column; gap:20px;">
+    <div class="card">
+      <h2>Toestellenpark van de klant</h2>
+      <p class="sub">Tik op een toestel om het toe te voegen. Meerdere keren tikken kan voor meerdere exemplaren.</p>
+      <div class="catalog-grid" id="catalog"></div>
+    </div>
+
+    <div class="card">
+      <h2>Toegevoegde toestellen <span id="device-count" style="font-weight:400; color:rgba(0,0,0,0.4);"></span></h2>
+      <div id="device-list"></div>
+    </div>
+  </div>
+
+  <div class="right-col" style="display:flex; flex-direction:column; gap:16px;">
+    <div class="price-tag">
+      <div class="head">
+        <p class="eyebrow">Abonnement</p>
+        <p class="amount" id="monthly-amount">14,99 € / maand</p>
+        <p class="tv-note" id="tv-note" style="display:none;">TV-tarief van toepassing</p>
+      </div>
+      <div class="body">
+        <div class="row-between"><span class="label">Aantal toestellen</span><span class="value" id="count-val">0</span></div>
+        <div class="row-between"><span class="label">Totale waarde park</span><span class="value" id="total-value">€ 0</span></div>
+        <div class="divider">
+          <p class="eyebrow-sm">Prijs per toestel</p>
+          <div class="big-amount">
+            <span class="num" id="per-day">—</span>
+            <span class="unit">/ dag</span>
+          </div>
+          <p class="fine-print" id="per-month-note">Voeg toestellen toe</p>
+        </div>
+        <div class="row-between divider"><span class="label">Jaarbedrag abonnement</span><span class="value" id="annual-value">€ 0</span></div>
+        <div class="promo-box">
+          <div class="row-between" style="margin-bottom:8px;">
+            <span class="label">Promo toepassen</span>
+            <span class="value" id="promo-rate">7,99 € / maand</span>
+          </div>
+          <div class="promo-input-row">
+            <span class="label" style="font-size:13px;">Aantal maanden aan promoprijs</span>
+            <input type="number" id="promo-months" min="0" max="12" step="1" value="0" oninput="updatePromo(this.value)">
+          </div>
+          <div class="row-between" id="promo-result-row" style="display:none; margin-top:8px;">
+            <span class="label">Jaarbedrag met promo</span>
+            <span class="value" id="promo-annual-value">€ 0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">🔧 Voordeel bij een herstelling</h3>
+      <p class="sub" style="margin-bottom:0;">Duid aan hoeveel herstellingen de klant realistisch per jaar zou (kunnen) hebben.</p>
+      <div class="repair-grid" id="repair-grid"></div>
+      <div id="repair-result"></div>
+    </div>
+
+    <div class="info-note">
+      ℹ️
+      <p>Rekenregel: 14,99 €/maand, of 16,99 €/maand zodra er een TV in het park zit. Prijs per toestel per dag = (abonnementsprijs ÷ aantal toestellen) ÷ 30 dagen.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CATALOG = [
+    { type: "wasmachine", label: "Wasmachine", icon: "🌀" },
+    { type: "droogkast", label: "Droogkast", icon: "💨" },
+    { type: "vaatwasser", label: "Vaatwasser", icon: "🍽️" },
+    { type: "oven", label: "Oven", icon: "🔥" },
+    { type: "kookplaat", label: "Kookplaat", icon: "⚡" },
+    { type: "fornuis", label: "Fornuis", icon: "👨‍🍳" },
+    { type: "koelkast", label: "Koelkast", icon: "🧊" },
+    { type: "diepvriezer", label: "Diepvriezer", icon: "❄️" },
+    { type: "wijnkast", label: "Wijnkast", icon: "🍷" },
+    { type: "microgolf", label: "Inbouw-microgolfoven", icon: "🍲" },
+    { type: "espresso", label: "Espressomachine", icon: "☕" },
+    { type: "tv", label: "TV", icon: "📺" },
+  ];
+
+  let idCounter = 1;
+  let devices = [];
+  let repairs = { klein: 0, groot: 0, levering: 0, wisselstuk: 0 };
+  let promoMonths = 0;
+
+  const fmt = (n) => (isFinite(n) ? n : 0).toLocaleString("nl-BE", { style: "currency", currency: "EUR" });
+
+  function addDevice(type) {
+    devices.push({ id: idCounter++, type, price: "", fromVDB: true });
+    render();
+  }
+  function removeDevice(id) {
+    devices = devices.filter(d => d.id !== id);
+    render();
+  }
+  function updatePrice(id, val) {
+    const d = devices.find(d => d.id === id);
+    if (d) d.price = val;
+    // Only refresh totals — never rebuild the list while the user is typing,
+    // or the input loses focus after every keystroke.
+    const { annualPrice } = renderSummary();
+    renderRepairs(annualPrice);
+  }
+  function updateSource(id, fromVDB, btnEl) {
+    const d = devices.find(d => d.id === id);
+    if (d) d.fromVDB = fromVDB;
+    // Toggle the button styling directly instead of re-rendering the list.
+    const row = btnEl.closest(".source-toggle");
+    row.querySelectorAll("button").forEach(b => b.classList.remove("active-vdb", "active-other"));
+    btnEl.classList.add(fromVDB ? "active-vdb" : "active-other");
+  }
+  function updatePromo(val) {
+    let n = parseInt(val, 10);
+    if (isNaN(n)) n = 0;
+    n = Math.max(0, Math.min(12, n));
+    promoMonths = n;
+    const { annualPrice } = renderSummary();
+    renderRepairs(annualPrice);
+  }
+  function changeRepair(key, delta) {
+    repairs[key] = Math.max(0, repairs[key] + delta);
+    render();
+  }
+  function resetAll() {
+    devices = [];
+    repairs = { klein: 0, groot: 0, levering: 0, wisselstuk: 0 };
+    promoMonths = 0;
+    document.getElementById("promo-months").value = 0;
+    render();
+  }
+
+  function renderCatalog() {
+    const el = document.getElementById("catalog");
+    el.innerHTML = CATALOG.map(c => `
+      <button class="catalog-btn" onclick="addDevice('${c.type}')">
+        <span class="icon">${c.icon}</span>
+        <span class="label">${c.label}</span>
+      </button>
+    `).join("");
+  }
+
+  function renderDeviceList() {
+    const listEl = document.getElementById("device-list");
+    const countEl = document.getElementById("device-count");
+    countEl.textContent = devices.length > 0 ? `(${devices.length})` : "";
+
+    if (devices.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">Nog geen toestellen toegevoegd. Kies hierboven het park van de klant.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = devices.map(d => {
+      const meta = CATALOG.find(c => c.type === d.type);
+      return `
+        <div class="device-row">
+          <span class="icon">${meta.icon}</span>
+          <span class="name">${meta.label}</span>
+          <div class="price-field">
+            <span>€</span>
+            <input type="number" min="0" step="1" placeholder="prijs" value="${d.price}"
+              oninput="updatePrice(${d.id}, this.value)">
+          </div>
+          <div class="source-toggle">
+            <button class="${d.fromVDB ? 'active-vdb' : ''}" onclick="updateSource(${d.id}, true, this)">Bij VDB gekocht</button>
+            <button class="${!d.fromVDB ? 'active-other' : ''}" onclick="updateSource(${d.id}, false, this)">Elders gekocht</button>
+          </div>
+          <button class="remove-btn" onclick="removeDevice(${d.id})" aria-label="Verwijderen">🗑</button>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderSummary() {
+    const hasTV = devices.some(d => d.type === "tv");
+    const monthlyPrice = hasTV ? 16.99 : 14.99;
+    const promoPrice = hasTV ? 8.99 : 7.99;
+    const count = devices.length;
+    const totalValue = devices.reduce((sum, d) => sum + (parseFloat(d.price) || 0), 0);
+    const perDeviceMonth = count > 0 ? monthlyPrice / count : 0;
+    const perDeviceDay = perDeviceMonth / 30;
+    const annualPrice = monthlyPrice * 12;
+    const promoAnnualPrice = promoMonths * promoPrice + (12 - promoMonths) * monthlyPrice;
+
+    document.getElementById("monthly-amount").textContent = hasTV ? "16,99 € / maand" : "14,99 € / maand";
+    document.getElementById("tv-note").style.display = hasTV ? "block" : "none";
+    document.getElementById("count-val").textContent = count;
+    document.getElementById("total-value").textContent = fmt(totalValue);
+    document.getElementById("per-day").textContent = count > 0 ? fmt(perDeviceDay) : "—";
+    document.getElementById("per-month-note").textContent = count > 0
+      ? `${fmt(perDeviceMonth)} per maand ÷ 30 dagen`
+      : "Voeg toestellen toe";
+    document.getElementById("annual-value").textContent = fmt(annualPrice);
+    document.getElementById("promo-rate").textContent = hasTV ? "8,99 € / maand" : "7,99 € / maand";
+
+    const promoResultRow = document.getElementById("promo-result-row");
+    if (promoMonths > 0) {
+      promoResultRow.style.display = "flex";
+      document.getElementById("promo-annual-value").textContent = fmt(promoAnnualPrice);
+    } else {
+      promoResultRow.style.display = "none";
+    }
+
+    // The benefit comparison further down should use whichever annual price
+    // the customer will actually pay.
+    const effectiveAnnualPrice = promoMonths > 0 ? promoAnnualPrice : annualPrice;
+    return { annualPrice: effectiveAnnualPrice };
+  }
+
+  function renderRepairs(annualPrice) {
+    const gridEl = document.getElementById("repair-grid");
+    const defs = [
+      { key: "klein", label: "Kleine herstelling", price: 180 },
+      { key: "groot", label: "Grote herstelling", price: 250 },
+      { key: "levering", label: "Leveringskosten", price: 19 },
+      { key: "wisselstuk", label: "Wisselstuk via shop", price: 48 },
+    ];
+
+    gridEl.innerHTML = defs.map(({ key, label, price }) => {
+      const active = repairs[key] > 0;
+      return `
+        <div class="repair-box ${active ? 'active' : ''}">
+          <p class="r-label">${label}</p>
+          <p class="r-price">${price} € / stuk</p>
+          <div class="r-controls">
+            <button onclick="changeRepair('${key}', -1)" ${repairs[key] === 0 ? "disabled" : ""}>−</button>
+            <span class="r-count">${repairs[key]}</span>
+            <button onclick="changeRepair('${key}', 1)">+</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const resultEl = document.getElementById("repair-result");
+    const repairCount = defs.reduce((sum, d) => sum + repairs[d.key], 0);
+
+    if (repairCount === 0) {
+      resultEl.innerHTML = "";
+      return;
+    }
+
+    const repairValue = defs.reduce((sum, d) => sum + repairs[d.key] * d.price, 0);
+    const benefit = repairValue - annualPrice;
+    const breakdown = defs
+      .filter(d => repairs[d.key] > 0)
+      .map(d => `${repairs[d.key]}× ${d.label.toLowerCase()}`)
+      .join(", ");
+
+    resultEl.innerHTML = `
+      <div class="result-box">
+        <div class="row-between">
+          <span class="label">Kostprijs ${repairCount} item${repairCount > 1 ? "s" : ""} (zonder contract)
+            ${breakdown ? `<span class="breakdown">${breakdown}</span>` : ""}
+          </span>
+          <span class="value">${fmt(repairValue)}</span>
+        </div>
+        <div class="row-between">
+          <span class="label">Jaarprijs Vanden Borre Life</span>
+          <span class="value">${fmt(annualPrice)}</span>
+        </div>
+        <div class="hr"></div>
+        <div class="benefit-row">
+          <span class="label">📈 Voordeel voor de klant</span>
+          <span class="value ${benefit >= 0 ? 'positive' : 'neutral'}">${benefit >= 0 ? "+" + fmt(benefit) : fmt(benefit)}</span>
+        </div>
+        <p class="result-note">${benefit >= 0
+          ? "Deze kosten alleen al zijn meer waard dan een volledig jaar Vanden Borre Life — en het contract dekt dit onbeperkt het hele jaar door."
+          : "Dit dekt het jaarbedrag nog niet volledig, maar het contract blijft dit onbeperkt dekken het hele jaar door."}</p>
+      </div>
+    `;
+  }
+
+  function render() {
+    renderDeviceList();
+    const { annualPrice } = renderSummary();
+    renderRepairs(annualPrice);
+  }
+
+  renderCatalog();
+  render();
+</script>
+
+</body>
+</html>
